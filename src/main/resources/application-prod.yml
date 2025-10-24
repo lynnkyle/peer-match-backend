@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://118.25.157.191:3306/peer-match
+    username: root
+    password: 123456
+  session:
+    timeout: 86400
