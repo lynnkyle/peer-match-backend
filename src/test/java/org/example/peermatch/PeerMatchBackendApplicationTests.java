@@ -1,5 +1,6 @@
 package org.example.peermatch;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.peermatch.model.domain.User;
 import org.example.peermatch.service.UserService;
 import org.junit.jupiter.api.Assertions;
@@ -10,6 +11,7 @@ import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @SpringBootTest
 class PeerMatchBackendApplicationTests {
 
@@ -60,6 +62,7 @@ class PeerMatchBackendApplicationTests {
         List<String> tagNameList = Arrays.asList("java", "python");
         List<User> res = userService.searchUsersByTags(tagNameList);
         Assertions.assertNotNull(res);
+        log.info("res = {}", res);
     }
 
 }

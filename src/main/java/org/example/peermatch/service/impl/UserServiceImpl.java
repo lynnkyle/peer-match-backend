@@ -18,7 +18,9 @@ import org.springframework.util.DigestUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -140,6 +142,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safetydUser.setUserRole(userFromDb.getUserRole());
         safetydUser.setUserStatus(userFromDb.getUserStatus());
         safetydUser.setCode(userFromDb.getCode());
+        safetydUser.setTags(userFromDb.getTags());
         safetydUser.setCreateTime(userFromDb.getCreateTime());
         return safetydUser;
     }
@@ -149,30 +152,48 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         req.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
     }
 
+    /**
+     * 根据标签搜索用户(内存)
+     * @param tagNameList
+     * @return
+     */
     @Override
     public List<User> searchUsersByTags(List<String> tagNameList) {
         if (CollectionUtils.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-//        for (String tagName : tagNameList) {
-//            queryWrapper = queryWrapper.like("tags", tagName);
-//        }
-//        List<User> userList = userMapper.selectList(queryWrapper);
-
         QueryWrapper queryWrapper = new QueryWrapper<>();
         List<User> userListFromDb = userMapper.selectList(queryWrapper);
         Gson gson = new Gson();
-        userListFromDb.stream().filter(user -> {
+        return userListFromDb.stream().filter(user -> {
+            String tagsStr = user.getTags();
             Set<String> tagNameSet = gson.fromJson(user.getTags(), new TypeToken<Set<String>>() {
             }.getType());
+            tagNameSet = Optional.ofNullable(tagNameSet).orElse(new HashSet<>());
             for (String tagName : tagNameList) {
                 if (!tagNameSet.contains(tagName)) {
-
+                    return false;
                 }
             }
             return true;
-        }).collect(Collectors.toList());
+        }).map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据标签搜索用户(SQL)
+     * @param tagNameList
+     * @return
+     */
+    @Deprecated
+    private List<User> searchUsersByTagsFromSQL(List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        for (String tagName : tagNameList) {
+            queryWrapper = queryWrapper.like("tags", tagName);
+        }
+        List<User> userList = userMapper.selectList(queryWrapper);
         return userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
     }
 }
