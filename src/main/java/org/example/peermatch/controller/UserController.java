@@ -1,6 +1,7 @@
 package org.example.peermatch.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.example.peermatch.common.BaseResponse;
 import org.example.peermatch.common.ErrorCode;
