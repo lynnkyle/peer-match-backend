@@ -67,7 +67,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 校验用户账号-重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<User>();
-        long count = userMapper.selectCount(queryWrapper.eq("account", userAccount));
+        long count = userMapper.selectCount(queryWrapper.eq("user_account", userAccount));
         if (count > 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号重复");
         }
@@ -113,8 +113,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 3. 校验密码是否正确
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
         QueryWrapper<User> queryWrapper = new QueryWrapper<User>();
-        queryWrapper.eq("account", userAccount);
-        queryWrapper.eq("password", encryptPassword);
+        queryWrapper.eq("user_account", userAccount);
+        queryWrapper.eq("user_password", encryptPassword);
         User userFromDb = userMapper.selectOne(queryWrapper);
         if (userFromDb == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号或密码错误");
@@ -166,7 +166,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         List<User> userListFromDb = userMapper.selectList(queryWrapper);
         Gson gson = new Gson();
         return userListFromDb.stream().filter(user -> {
-            String tagsStr = user.getTags();
             Set<String> tagNameSet = gson.fromJson(user.getTags(), new TypeToken<Set<String>>() {
             }.getType());
             tagNameSet = Optional.ofNullable(tagNameSet).orElse(new HashSet<>());

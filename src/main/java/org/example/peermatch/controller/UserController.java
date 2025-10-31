@@ -12,6 +12,7 @@ import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.request.UserLoginRequest;
 import org.example.peermatch.model.request.UserRegisterRequest;
 import org.example.peermatch.service.UserService;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = {"http://localhost:5173"}, allowCredentials = "true")
 public class UserController {
     @Resource
     private UserService userService;
@@ -34,7 +36,7 @@ public class UserController {
         用户注册
      */
     @PostMapping("/register")
-    private BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -50,7 +52,7 @@ public class UserController {
         用户登录
      */
     @PostMapping("/login")
-    private BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -61,7 +63,7 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    private BaseResponse<Void> userLogout(HttpServletRequest request) {
+    public BaseResponse<Void> userLogout(HttpServletRequest request) {
         userService.userLogout(request);
         return ResultUtils.success(null, "用户退出登录成功");
     }
@@ -80,27 +82,37 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    private BaseResponse<List<User>> searchUsers(@RequestParam(value = "name", required = false) String userName, HttpServletRequest req) {
+    public BaseResponse<List<User>> searchUsers(@RequestParam(value = "name", required = false) String userName, HttpServletRequest req) {
         // 用户鉴权
         if (!isAdmin(req)) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(userName)) {
-            queryWrapper.like("name", userName);
+            queryWrapper.like("user_name", userName);
         }
         List<User> userList = userService.list(queryWrapper);
         userList = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
         return ResultUtils.success(userList, "用户列表获取成功, 并返回用户列表");
     }
 
+    @GetMapping("/search/tags")
+    public BaseResponse<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<User> userList = userService.searchUsersByTags(tagNameList);
+        return ResultUtils.success(userList, "成功根据标签返回用户列表");
+    }
+
     @DeleteMapping("/delete")
-    private BaseResponse<Boolean> deleteUsers(@RequestParam("id") long id, HttpServletRequest req) {
+    public BaseResponse<Boolean> deleteUsers(@RequestParam("id") long id, HttpServletRequest req) {
         if (!isAdmin(req)) throw new BusinessException(ErrorCode.NO_AUTH);
         if (id <= 0) throw new BusinessException(ErrorCode.PARAMS_ERROR);
         boolean res = userService.removeById(id);
         return ResultUtils.success(res, "用户删除成功");
     }
+
 
     private boolean isAdmin(HttpServletRequest req) {
         // 用户鉴权
