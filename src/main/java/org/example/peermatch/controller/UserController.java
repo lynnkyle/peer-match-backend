@@ -105,6 +105,18 @@ public class UserController {
         return ResultUtils.success(userList, "成功根据标签返回用户列表");
     }
 
+    @PostMapping("/update")
+    public BaseResponse<Boolean> updateUser(User user, HttpServletRequest req) {
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        if (isAdmin(req)) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        boolean res = userService.updateUser(user);
+        return ResultUtils.success(res, "用户信息更新成功");
+    }
+
     @DeleteMapping("/delete")
     public BaseResponse<Boolean> deleteUsers(@RequestParam("id") long id, HttpServletRequest req) {
         if (!isAdmin(req)) throw new BusinessException(ErrorCode.NO_AUTH);

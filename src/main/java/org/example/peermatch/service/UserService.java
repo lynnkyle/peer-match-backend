@@ -34,6 +34,14 @@ public interface UserService extends IService<User> {
     User doLogin(String userAccount, String userPassword, HttpServletRequest request);
 
     /**
+     * 用户更新
+     *
+     * @param user
+     * @return
+     */
+    Boolean updateUser(User user);
+
+    /**
      * 用户脱敏
      *
      * @param userFromDb

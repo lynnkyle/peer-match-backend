@@ -40,6 +40,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private UserMapper userMapper;
 
+    /**
+     * 用户注册
+     *
+     * @param userAccount   用户账户
+     * @param userPassword  用户密码
+     * @param checkPassword 校验密码
+     * @param userCode      校验编码
+     * @return
+     */
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword, String userCode) {
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, userCode)) {
@@ -92,6 +101,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return user.getId();
     }
 
+    /**
+     * 用户登录
+     *
+     * @param userAccount
+     * @param userPassword
+     * @param request
+     * @return
+     */
     @Override
     public User doLogin(String userAccount, String userPassword, HttpServletRequest request) {
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
@@ -127,9 +144,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return safetydUser;
     }
 
+    /**
+     * 用户更新
+     *
+     * @param user
+     * @return
+     */
+    @Override
+    public Boolean updateUser(User user) {
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+
+    }
+
     /*
         用户脱敏
-     */
+    */
     public User getSafetyUser(User userFromDb) {
         User safetydUser = new User();
         safetydUser.setId(userFromDb.getId());
@@ -147,6 +179,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return safetydUser;
     }
 
+    /**
+     * 用户注销
+     *
+     * @param req
+     */
     @Override
     public void userLogout(HttpServletRequest req) {
         req.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
@@ -154,6 +191,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 根据标签搜索用户(内存)
+     *
      * @param tagNameList
      * @return
      */
@@ -180,6 +218,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 根据标签搜索用户(SQL)
+     *
      * @param tagNameList
      * @return
      */
