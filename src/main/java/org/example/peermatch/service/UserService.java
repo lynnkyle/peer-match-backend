@@ -1,5 +1,6 @@
 package org.example.peermatch.service;
 
+import org.example.peermatch.constant.UserConstant;
 import org.example.peermatch.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -37,9 +38,10 @@ public interface UserService extends IService<User> {
      * 用户更新
      *
      * @param user
+     * @param loginUser
      * @return
      */
-    Boolean updateUser(User user);
+    boolean updateUser(User user, User loginUser);
 
     /**
      * 用户脱敏
@@ -64,4 +66,29 @@ public interface UserService extends IService<User> {
      * @return
      */
     List<User> searchUsersByTags(List<String> tagNameList);
+
+
+    /**
+     * 判断用户是否为管理员
+     *
+     * @param req
+     * @return
+     */
+    boolean isAdmin(HttpServletRequest req);
+
+    /**
+     * 判断用户是否为管理员
+     *
+     * @param loginUser
+     * @return
+     */
+    boolean isAdmin(User loginUser);
+
+    /**
+     * 获取当前用户登录信息
+     *
+     * @param req
+     * @return
+     */
+    User getLoginUser(HttpServletRequest req);
 }

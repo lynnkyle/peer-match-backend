@@ -1,4 +1,4 @@
-package script;
+package org.example.peermatch.script;
 
 import com.alibaba.excel.EasyExcel;
 

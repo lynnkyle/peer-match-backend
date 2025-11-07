@@ -1,6 +1,8 @@
 package org.example.peermatch.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.example.peermatch.common.BaseResponse;
@@ -84,7 +86,7 @@ public class UserController {
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(@RequestParam(value = "name", required = false) String userName, HttpServletRequest req) {
         // 用户鉴权
-        if (!isAdmin(req)) {
+        if (!userService.isAdmin(req)) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -106,30 +108,29 @@ public class UserController {
     }
 
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateUser(User user, HttpServletRequest req) {
+    public BaseResponse<Boolean> updateUser(@RequestBody User user, HttpServletRequest req) {
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        if (isAdmin(req)) {
-            throw new BusinessException(ErrorCode.NO_AUTH);
-        }
-        boolean res = userService.updateUser(user);
+        User loginUser = userService.getLoginUser(req);
+        boolean res = userService.updateUser(user, loginUser);
         return ResultUtils.success(res, "用户信息更新成功");
+    }
+
+    @GetMapping("/recommend")
+    public BaseResponse<List<User>> recommendUsers(int pageSize, int pageNum, HttpServletRequest req) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        IPage<User> userList = userService.page(new Page<>(), queryWrapper);
+        userList = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(userList, "用户列表获取成功, 并返回用户列表");
     }
 
     @DeleteMapping("/delete")
     public BaseResponse<Boolean> deleteUsers(@RequestParam("id") long id, HttpServletRequest req) {
-        if (!isAdmin(req)) throw new BusinessException(ErrorCode.NO_AUTH);
+        if (!userService.isAdmin(req)) throw new BusinessException(ErrorCode.NO_AUTH);
         if (id <= 0) throw new BusinessException(ErrorCode.PARAMS_ERROR);
         boolean res = userService.removeById(id);
         return ResultUtils.success(res, "用户删除成功");
-    }
-
-
-    private boolean isAdmin(HttpServletRequest req) {
-        // 用户鉴权
-        User user = (User) req.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        return user != null && user.getUserRole() == UserConstant.ADMIN_ROLE;
     }
 
 }

@@ -1,4 +1,4 @@
-package script;
+package org.example.peermatch.script;
 
 import java.util.Date;
 

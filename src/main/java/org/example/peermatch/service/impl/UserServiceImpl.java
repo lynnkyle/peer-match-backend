@@ -148,15 +148,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 用户更新
      *
      * @param user
+     * @param loginUser
      * @return
      */
     @Override
-    public Boolean updateUser(User user) {
-        if (user == null) {
+    public boolean updateUser(User user, User loginUser) {
+        long userId = user.getId();
+        if (userId <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-
-
+        // todo 补充校验, 用户没有任何更新的值, 直接抛出异常
+        // 管理员, 允许更新任意用户; 不是管理员，只允许更新自己信息
+        if (!isAdmin(loginUser) && userId != loginUser.getId()) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        User oldUser = userMapper.selectById(userId);
+        if (oldUser == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return userMapper.updateById(user) > 0;
     }
 
     /*
@@ -234,6 +244,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         List<User> userList = userMapper.selectList(queryWrapper);
         return userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
     }
+
+    /**
+     * 判断用户是否为管理员
+     *
+     * @param req
+     * @return
+     */
+    public boolean isAdmin(HttpServletRequest req) {
+        // 用户鉴权
+        User user = (User) req.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        return user != null && user.getUserRole() == UserConstant.ADMIN_ROLE;
+    }
+
+    public boolean isAdmin(User loginUser) {
+        // 用户鉴权
+        return loginUser != null && loginUser.getUserRole() == UserConstant.ADMIN_ROLE;
+    }
+
+    /**
+     * 获取当前用户登录信息
+     *
+     * @param req
+     * @return
+     */
+    public User getLoginUser(HttpServletRequest req) {
+        if (req == null) {
+            return null;
+        }
+        User user = (User) req.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        return user;
+    }
+
 }
 
 
