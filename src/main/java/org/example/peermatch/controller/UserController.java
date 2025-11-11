@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.example.peermatch.common.BaseResponse;
 import org.example.peermatch.common.ErrorCode;
@@ -14,12 +15,15 @@ import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.request.UserLoginRequest;
 import org.example.peermatch.model.request.UserRegisterRequest;
 import org.example.peermatch.service.UserService;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +31,7 @@ import java.util.stream.Collectors;
  * @description 用户接口
  * @createDate 2025/9/19 16:07
  */
+@Slf4j
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = {"http://localhost:5173"}, allowCredentials = "true")
@@ -118,11 +123,16 @@ public class UserController {
     }
 
     @GetMapping("/recommend")
-    public BaseResponse<List<User>> recommendUsers(int pageSize, int pageNum, HttpServletRequest req) {
+    public BaseResponse<IPage<User>> recommendUsers(int pageNum, int pageSize, HttpServletRequest req) {
+        // 缓存存在, 直接读缓存
+        User loginUser = userService.getLoginUser(req);
+        if (userPage != null) {
+            return ResultUtils.success(userPage, "用户列表获取成功, 并返回用户列表");
+        }
+        // 缓存不存在, 读取数据库
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        IPage<User> userList = userService.page(new Page<>(), queryWrapper);
-        userList = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
-        return ResultUtils.success(userList, "用户列表获取成功, 并返回用户列表");
+        userPage = userService.page(new Page<>(pageNum, pageSize), queryWrapper);
+        return ResultUtils.success(userPage, "用户列表获取成功, 并返回用户列表");
     }
 
     @DeleteMapping("/delete")
