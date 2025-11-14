@@ -13,20 +13,21 @@ spring:
     name: user-center
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/peer-match
+    url: jdbc:mysql://localhost:3306/peer-match?serverTimezone=Asia/Shanghai
     username: root
     password: 123456
   redis:
     host: localhost
     port: 6379
     database: 1
+    redisson-database: 2
   session:
     timeout: 86400
     store-type: redis
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       # 数据库逻辑删除字段

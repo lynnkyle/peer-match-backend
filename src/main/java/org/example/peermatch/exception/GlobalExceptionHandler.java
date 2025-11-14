@@ -25,6 +25,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public BaseResponse runtimeExceptionHandler(RuntimeException e) {
         log.error("RuntimeException", e);
-        return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "系统内部异常");
+        return ResultUtils.error(ErrorCode.SYSTEM_ERROR, e.getMessage());
     }
 }

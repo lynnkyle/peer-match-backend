@@ -7,6 +7,11 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * @author LinZeyuan
+ * @description
+ * @createDate 2025/11/11 17:45
+ */
 @Configuration
 @MapperScan("org.example.peermatch.mapper")
 public class MybatisPlusConfig {

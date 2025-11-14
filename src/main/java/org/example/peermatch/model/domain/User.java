@@ -8,7 +8,7 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * 用户实体类
+ * 用户表
  *
  * @TableName user
  */

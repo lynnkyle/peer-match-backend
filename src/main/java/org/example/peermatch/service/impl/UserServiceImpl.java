@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author LinZeyuan
- * @description 用户服务实现类
+ * @description 针对表【user(用户表)】的数据库操作Service实现
  * @createDate 2025-09-18 17:35:27
  */
 @Service
@@ -52,7 +52,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword, String userCode) {
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, userCode)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         // 1.校验用户账号
         if (userAccount.length() < 4) {
@@ -95,7 +95,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setCode(userCode);
         boolean result = save(user);
         if (!result) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据库保存失败");
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据库User插入失败");
         }
         // 5.返回用户ID
         return user.getId();
@@ -112,7 +112,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public User doLogin(String userAccount, String userPassword, HttpServletRequest request) {
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         // 1. 校验用户账号
         if (userAccount.length() < 4) {
@@ -164,7 +164,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         User oldUser = userMapper.selectById(userId);
         if (oldUser == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "该用户不存在");
         }
         return userMapper.updateById(user) > 0;
     }

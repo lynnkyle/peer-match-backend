@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.example.peermatch.common.BaseResponse;
 import org.example.peermatch.common.ErrorCode;
 import org.example.peermatch.common.ResultUtils;
+import org.example.peermatch.constant.CacheConstant;
 import org.example.peermatch.constant.UserConstant;
 import org.example.peermatch.exception.BusinessException;
 import org.example.peermatch.model.domain.User;
@@ -36,6 +37,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/user")
 @CrossOrigin(origins = {"http://localhost:5173"}, allowCredentials = "true")
 public class UserController {
+
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
     @Resource
     private UserService userService;
 
@@ -126,12 +130,20 @@ public class UserController {
     public BaseResponse<IPage<User>> recommendUsers(int pageNum, int pageSize, HttpServletRequest req) {
         // 缓存存在, 直接读缓存
         User loginUser = userService.getLoginUser(req);
+        String redisKey = String.format(CacheConstant.recommendCache + "%s", loginUser.getId());
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        IPage<User> userPage = (Page<User>) valueOperations.get(redisKey);
         if (userPage != null) {
             return ResultUtils.success(userPage, "用户列表获取成功, 并返回用户列表");
         }
         // 缓存不存在, 读取数据库
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         userPage = userService.page(new Page<>(pageNum, pageSize), queryWrapper);
+        try {
+            valueOperations.set(redisKey, userPage, 30000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("redis error", e.getMessage());
+        }
         return ResultUtils.success(userPage, "用户列表获取成功, 并返回用户列表");
     }
 
@@ -140,6 +152,9 @@ public class UserController {
         if (!userService.isAdmin(req)) throw new BusinessException(ErrorCode.NO_AUTH);
         if (id <= 0) throw new BusinessException(ErrorCode.PARAMS_ERROR);
         boolean res = userService.removeById(id);
+        if (!res) {
+            throw new RuntimeException("数据库User删除用户异常");
+        }
         return ResultUtils.success(res, "用户删除成功");
     }
 
