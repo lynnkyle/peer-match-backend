@@ -80,7 +80,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
         long teamNum = this.count(queryWrapper);
-        if (teamNum > 5) {
+        if (teamNum >= 5) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户最多允许创建5个用户");
         }
         //4). 插入数据库队伍信息
