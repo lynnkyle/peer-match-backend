@@ -12,6 +12,9 @@ import org.example.peermatch.model.domain.Team;
 import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.dto.TeamQuery;
 import org.example.peermatch.model.request.TeamAddRequest;
+import org.example.peermatch.model.request.TeamJoinRequest;
+import org.example.peermatch.model.request.TeamUpdateRequest;
+import org.example.peermatch.model.vo.TeamUserVO;
 import org.example.peermatch.service.TeamService;
 import org.example.peermatch.service.UserService;
 import org.springframework.beans.BeanUtils;
@@ -38,11 +41,11 @@ public class TeamController {
     private TeamService teamService;
 
     @PostMapping("/add")
-    public BaseResponse<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest, HttpServletRequest request) {
+    public BaseResponse<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest, HttpServletRequest req) {
         if (teamAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser(req);
         Team team = new Team();
         BeanUtils.copyProperties(teamAddRequest, team);
         long teamId = teamService.addTeam(team, loginUser);
@@ -62,11 +65,12 @@ public class TeamController {
     }
 
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateTeam(@RequestBody Team team) {
-        if (team == null) {
+    public BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateRequest teamUpdateRequest, HttpServletRequest req) {
+        if (teamUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        boolean res = teamService.updateById(team);
+        User loginUser = userService.getLoginUser(req);
+        boolean res = teamService.updateTeam(teamUpdateRequest, loginUser);
         if (!res) {
             throw new RuntimeException("数据库Team更新队伍异常");
         }
@@ -86,14 +90,12 @@ public class TeamController {
     }
 
     @GetMapping("/list")
-    public BaseResponse<List<Team>> listTeams(TeamQuery teamQuery) {
+    public BaseResponse<List<TeamUserVO>> listTeams(TeamQuery teamQuery, HttpServletRequest req) {
         if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        Team team = new Team();
-        BeanUtils.copyProperties(teamQuery, team);
-        QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
-        List<Team> teamList = teamService.list(queryWrapper);
+        boolean isAdmin = userService.isAdmin(req);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, isAdmin);
         return ResultUtils.success(teamList, "成功查询队伍列表");
     }
 
@@ -110,4 +112,13 @@ public class TeamController {
         return ResultUtils.success(pageRes, "成功查询队伍列表");
     }
 
+    @PostMapping("/join")
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest, HttpServletRequest req) {
+        if (teamJoinRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(req);
+        boolean res = teamService.joinTeam(teamJoinRequest, loginUser);
+        return ResultUtils.success(res, "成功加入队伍");
+    }
 }

@@ -1,5 +1,7 @@
 package org.example.peermatch.model.request;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -7,12 +9,16 @@ import java.util.Date;
 
 /**
  * @author LinZeyuan
- * @description 队伍创建请求
- * @createDate 2025/11/14 17:15
+ * @description 队伍更新请求
+ * @createDate 2025/11/20 9:25
  */
 @Data
-public class TeamAddRequest implements Serializable {
-    private static final long serialVersionUID = -2383629157493248437L;
+public class TeamUpdateRequest implements Serializable {
+    private static final long serialVersionUID = 9156711774980006173L;
+    /**
+     * 队伍id
+     */
+    private Long id;
     /**
      * 队伍名称
      */
@@ -22,16 +28,6 @@ public class TeamAddRequest implements Serializable {
      * 队伍描述
      */
     private String description;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
-
-    /**
-     * 队伍最大人数
-     */
-    private Integer maxNum;
 
     /**
      * 队伍过期时间

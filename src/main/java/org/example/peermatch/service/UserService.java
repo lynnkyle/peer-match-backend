@@ -32,7 +32,7 @@ public interface UserService extends IService<User> {
      * @param userPassword
      * @return 用户信息(脱敏)
      */
-    User doLogin(String userAccount, String userPassword, HttpServletRequest request);
+    User doLogin(String userAccount, String userPassword, HttpServletRequest req);
 
     /**
      * 用户更新

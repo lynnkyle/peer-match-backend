@@ -14,14 +14,20 @@ import java.util.Date;
  * @description
  * @createDate 2025/11/13 11:59
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class TeamQuery extends PageRequest {
+    private static final long serialVersionUID = -6438231938603876651L;
     /**
      * 队伍id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
+
+    /**
+     * 关键词(队伍名称、队伍描述)
+     */
+    private String searchText;
 
     /**
      * 队伍名称

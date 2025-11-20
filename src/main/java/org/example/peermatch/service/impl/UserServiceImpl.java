@@ -106,11 +106,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      *
      * @param userAccount
      * @param userPassword
-     * @param request
+     * @param req
      * @return
      */
     @Override
-    public User doLogin(String userAccount, String userPassword, HttpServletRequest request) {
+    public User doLogin(String userAccount, String userPassword, HttpServletRequest req) {
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -139,7 +139,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 5. 返回用户信息(脱敏)
         User safetydUser = getSafetyUser(userFromDb);
         // 4. 保存用户登录态
-        HttpSession session = request.getSession();
+        HttpSession session = req.getSession();
         session.setAttribute(UserConstant.USER_LOGIN_STATE, safetydUser);
         return safetydUser;
     }

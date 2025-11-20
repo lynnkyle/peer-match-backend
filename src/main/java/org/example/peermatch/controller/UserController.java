@@ -63,19 +63,19 @@ public class UserController {
         用户登录
      */
     @PostMapping("/login")
-    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest req) {
         if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
-        User user = userService.doLogin(userAccount, userPassword, request);
+        User user = userService.doLogin(userAccount, userPassword, req);
         return ResultUtils.success(user, "用户登录成功, 并返回用户信息");
     }
 
     @PostMapping("/logout")
-    public BaseResponse<Void> userLogout(HttpServletRequest request) {
-        userService.userLogout(request);
+    public BaseResponse<Void> userLogout(HttpServletRequest req) {
+        userService.userLogout(req);
         return ResultUtils.success(null, "用户退出登录成功");
     }
 
