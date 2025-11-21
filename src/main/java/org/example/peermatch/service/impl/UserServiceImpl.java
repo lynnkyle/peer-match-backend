@@ -93,7 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
         user.setCode(userCode);
-        boolean result = save(user);
+        boolean result = this.save(user);
         if (!result) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "数据库User插入失败");
         }

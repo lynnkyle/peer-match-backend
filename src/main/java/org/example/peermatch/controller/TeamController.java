@@ -13,6 +13,7 @@ import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.dto.TeamQuery;
 import org.example.peermatch.model.request.TeamAddRequest;
 import org.example.peermatch.model.request.TeamJoinRequest;
+import org.example.peermatch.model.request.TeamQuitRequest;
 import org.example.peermatch.model.request.TeamUpdateRequest;
 import org.example.peermatch.model.vo.TeamUserVO;
 import org.example.peermatch.service.TeamService;
@@ -52,18 +53,6 @@ public class TeamController {
         return ResultUtils.success(teamId, "成功创建队伍");
     }
 
-    @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteTeam(@RequestParam("id") long id) {
-        if (id <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        boolean res = teamService.removeById(id);
-        if (!res) {
-            throw new RuntimeException("数据库Team删除队伍异常");
-        }
-        return ResultUtils.success(res, "成功删除队伍");
-    }
-
     @PostMapping("/update")
     public BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateRequest teamUpdateRequest, HttpServletRequest req) {
         if (teamUpdateRequest == null) {
@@ -71,10 +60,37 @@ public class TeamController {
         }
         User loginUser = userService.getLoginUser(req);
         boolean res = teamService.updateTeam(teamUpdateRequest, loginUser);
-        if (!res) {
-            throw new RuntimeException("数据库Team更新队伍异常");
-        }
         return ResultUtils.success(res, "成功更新队伍");
+    }
+
+    @PostMapping("/join")
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest, HttpServletRequest req) {
+        if (teamJoinRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(req);
+        boolean res = teamService.joinTeam(teamJoinRequest, loginUser);
+        return ResultUtils.success(res, "成功加入队伍");
+    }
+
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(@RequestBody TeamQuitRequest teamQuitRequest, HttpServletRequest req) {
+        if (teamQuitRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(req);
+        boolean res = teamService.quitTeam(teamQuitRequest, loginUser);
+        return ResultUtils.success(res, "成功退出队伍");
+    }
+
+    @PostMapping("/delete")
+    public BaseResponse<Boolean> deleteTeam(@RequestParam("teamId") long teamId, HttpServletRequest req) {
+        if (teamId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(req);
+        boolean res = teamService.deleteTeam(teamId, loginUser);
+        return ResultUtils.success(res, "成功删除队伍");
     }
 
     @GetMapping("/get")
@@ -110,15 +126,5 @@ public class TeamController {
         Page<Team> page = new Page<>(teamQuery.getPageNum(), teamQuery.getPageSize());
         IPage<Team> pageRes = teamService.page(page, queryWrapper);
         return ResultUtils.success(pageRes, "成功查询队伍列表");
-    }
-
-    @PostMapping("/join")
-    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest, HttpServletRequest req) {
-        if (teamJoinRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        User loginUser = userService.getLoginUser(req);
-        boolean res = teamService.joinTeam(teamJoinRequest, loginUser);
-        return ResultUtils.success(res, "成功加入队伍");
     }
 }

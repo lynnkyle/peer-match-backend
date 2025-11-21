@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.dto.TeamQuery;
 import org.example.peermatch.model.request.TeamJoinRequest;
+import org.example.peermatch.model.request.TeamQuitRequest;
 import org.example.peermatch.model.request.TeamUpdateRequest;
 import org.example.peermatch.model.vo.TeamUserVO;
 
@@ -52,4 +53,22 @@ public interface TeamService extends IService<Team> {
      * @return
      */
     boolean joinTeam(TeamJoinRequest teamJoinRequest, User loginUser);
+
+    /**
+     * 退出队伍
+     *
+     * @param teamQuitRequest
+     * @param loginUser
+     * @return
+     */
+    boolean quitTeam(TeamQuitRequest teamQuitRequest, User loginUser);
+
+    /**
+     * 解散队伍
+     *
+     * @param teamId
+     * @param loginUser
+     * @return
+     */
+    boolean deleteTeam(Long teamId, User loginUser);
 }

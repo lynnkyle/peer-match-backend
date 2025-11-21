@@ -41,14 +41,14 @@ create table team
 (
     id          bigint auto_increment comment '队伍id'
         primary key,
-    team_name   varchar(256) not null comment '队伍名称',
-    description varchar(1024) null comment '队伍描述',
-    user_id     bigint       not null comment '用户id',
-    max_num     int      default 1 null comment '队伍最大人数',
-    expire_time datetime null comment '队伍过期时间',
-    team_status tinyint  default 0 null comment '队伍状态(0-公开, 1-私有, 2-加密)',
-    password    varchar(64) null comment '队伍密码',
-    is_delete   tinyint  default 0 null comment '逻辑删除(1-删除)',
+    team_name   varchar(256)                       not null comment '队伍名称',
+    description varchar(1024)                      null comment '队伍描述',
+    user_id     bigint                             not null comment '用户id(队长id)',
+    max_num     int      default 1                 null comment '队伍最大人数',
+    expire_time datetime                           null comment '队伍过期时间',
+    team_status tinyint  default 0                 null comment '队伍状态(0-公开, 1-私有, 2-加密)',
+    password    varchar(64)                        null comment '队伍密码',
+    is_delete   tinyint  default 0                 null comment '逻辑删除(1-删除)',
     create_time datetime default CURRENT_TIMESTAMP null comment '创建时间',
     update_time datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间'
 ) comment '队伍表';
