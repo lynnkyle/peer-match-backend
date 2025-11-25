@@ -72,10 +72,15 @@ public class User implements Serializable {
     private String code;
 
     /**
+     * 用户简介
+     */
+    private String profile;
+
+    /**
      * 标签列表
      */
     private String tags;
-    
+
     /**
      * 逻辑删除
      */
