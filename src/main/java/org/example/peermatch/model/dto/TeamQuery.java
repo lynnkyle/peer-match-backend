@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.example.peermatch.common.PageRequest;
 
-import java.util.Date;
+import java.util.List;
 
 /**
  * @author LinZeyuan
@@ -23,6 +23,11 @@ public class TeamQuery extends PageRequest {
      */
     @TableId(type = IdType.AUTO)
     private Long id;
+
+    /**
+     * 队伍id列表
+     */
+    private List<Long> idList;
 
     /**
      * 关键词(队伍名称、队伍描述)

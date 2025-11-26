@@ -10,6 +10,7 @@ import org.example.peermatch.common.ResultUtils;
 import org.example.peermatch.exception.BusinessException;
 import org.example.peermatch.model.domain.Team;
 import org.example.peermatch.model.domain.User;
+import org.example.peermatch.model.domain.UserTeam;
 import org.example.peermatch.model.dto.TeamQuery;
 import org.example.peermatch.model.request.TeamAddRequest;
 import org.example.peermatch.model.request.TeamJoinRequest;
@@ -18,12 +19,16 @@ import org.example.peermatch.model.request.TeamUpdateRequest;
 import org.example.peermatch.model.vo.TeamUserVO;
 import org.example.peermatch.service.TeamService;
 import org.example.peermatch.service.UserService;
+import org.example.peermatch.service.UserTeamService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author LinZeyuan
@@ -40,6 +45,8 @@ public class TeamController {
     private UserService userService;
     @Resource
     private TeamService teamService;
+    @Resource
+    private UserTeamService userTeamService;
 
     @PostMapping("/add")
     public BaseResponse<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest, HttpServletRequest req) {
@@ -127,4 +134,46 @@ public class TeamController {
         IPage<Team> pageRes = teamService.page(page, queryWrapper);
         return ResultUtils.success(pageRes, "成功查询队伍列表");
     }
+
+    /**
+     * 获取当前用户创建的队伍
+     *
+     * @param teamQuery
+     * @param req
+     * @return
+     */
+    @GetMapping("/list/current/create")
+    public BaseResponse<List<TeamUserVO>> listCurrentUserCreateTeams(TeamQuery teamQuery, HttpServletRequest req) {
+        if (teamQuery == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(req);
+        teamQuery.setUserId(loginUser.getId());
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true);
+        return ResultUtils.success(teamList, "成功查询队伍列表");
+    }
+
+    /**
+     * 获取当前用户加入的队伍
+     *
+     * @param teamQuery
+     * @param req
+     * @return
+     */
+    @GetMapping("/list/current/join")
+    public BaseResponse<List<TeamUserVO>> listCurrentUserJoinTeams(TeamQuery teamQuery, HttpServletRequest req) {
+        if (teamQuery == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(req);
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("user_id", loginUser.getId());
+        List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
+        Map<Long, List<UserTeam>> listMap = userTeamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
+        List<Long> idList = new ArrayList<>(listMap.keySet());
+        teamQuery.setIdList(idList);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true);
+        return ResultUtils.success(teamList, "成功查询队伍列表");
+    }
+
 }

@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.example.peermatch.common.ErrorCode;
 import org.example.peermatch.constant.TeamStatus;
@@ -24,7 +25,6 @@ import org.example.peermatch.service.UserTeamService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -128,6 +128,10 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
             if (teamId != null && teamId > 0) {
                 queryWrapper.eq("id", teamId);
             }
+            List<Long> teamIdList = teamQuery.getIdList();
+            if (CollectionUtils.isNotEmpty(teamIdList)) {
+                queryWrapper.in("id", teamIdList);
+            }
             String searchText = teamQuery.getSearchText();
             if (StringUtils.isNotBlank(searchText)) {
                 queryWrapper.and(qw -> qw.like("team_name", searchText).or().like("description", searchText));
@@ -160,12 +164,18 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         queryWrapper.and(qw -> qw.isNull("expire_time").or().gt("expire_time", new Date()));
         //iii.条件查询管理员才能查看加密房间
         if (teamStatusEnum == null) {
-            teamStatusEnum = TeamStatus.PUBLIC;
+            if (isAdmin) {
+                queryWrapper.in("team_status", TeamStatus.PUBLIC.getValue(), TeamStatus.PRIVATE.getValue(), TeamStatus.SECRET.getValue());
+            } else {
+                queryWrapper.in("team_status", TeamStatus.PUBLIC.getValue(), TeamStatus.SECRET.getValue());
+            }
+        } else {
+            if (!isAdmin && teamStatusEnum == TeamStatus.PRIVATE) {
+                throw new BusinessException(ErrorCode.NO_AUTH, "非管理员不允许访问私密房间");
+            } else {
+                queryWrapper.eq("team_status", teamStatusEnum.getValue());
+            }
         }
-        if (!isAdmin && teamStatusEnum != TeamStatus.PUBLIC) {
-            throw new BusinessException(ErrorCode.NO_AUTH, "非管理员不允许访问私密房间");
-        }
-        queryWrapper.eq("team_status", teamStatusEnum.getValue());
         //iv.条件查询根据关键词（name、description）查询队伍
         List<Team> teamList = this.list(queryWrapper);
         //v.关联查询已加入队伍的用户信息
