@@ -2,14 +2,13 @@ package org.example.peermatch.service;
 
 import org.example.peermatch.model.domain.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.dto.TeamQuery;
 import org.example.peermatch.model.request.TeamJoinRequest;
 import org.example.peermatch.model.request.TeamQuitRequest;
 import org.example.peermatch.model.request.TeamUpdateRequest;
 import org.example.peermatch.model.vo.TeamUserVO;
+import org.example.peermatch.model.vo.UserVO;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -22,10 +21,10 @@ public interface TeamService extends IService<Team> {
      * 创建队伍
      *
      * @param team
-     * @param loginUser
+     * @param loginUserVO
      * @return
      */
-    long addTeam(Team team, User loginUser);
+    long addTeam(Team team, UserVO loginUserVO);
 
     /**
      * 查询队伍
@@ -40,35 +39,35 @@ public interface TeamService extends IService<Team> {
      * 更新队伍
      *
      * @param teamUpdateRequest
-     * @param loginUser
+     * @param loginUserVO
      * @return
      */
-    boolean updateTeam(TeamUpdateRequest teamUpdateRequest, User loginUser);
+    boolean updateTeam(TeamUpdateRequest teamUpdateRequest, UserVO loginUserVO);
 
     /**
      * 加入队伍
      *
      * @param teamJoinRequest
-     * @param loginUser
+     * @param loginUserVO
      * @return
      */
-    boolean joinTeam(TeamJoinRequest teamJoinRequest, User loginUser);
+    boolean joinTeam(TeamJoinRequest teamJoinRequest, UserVO loginUserVO);
 
     /**
      * 退出队伍
      *
      * @param teamQuitRequest
-     * @param loginUser
+     * @param loginUserVO
      * @return
      */
-    boolean quitTeam(TeamQuitRequest teamQuitRequest, User loginUser);
+    boolean quitTeam(TeamQuitRequest teamQuitRequest, UserVO loginUserVO);
 
     /**
      * 解散队伍
      *
      * @param teamId
-     * @param loginUser
+     * @param loginUserVO
      * @return
      */
-    boolean deleteTeam(Long teamId, User loginUser);
+    boolean deleteTeam(Long teamId, UserVO loginUserVO);
 }

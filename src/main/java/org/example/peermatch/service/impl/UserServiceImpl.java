@@ -4,13 +4,16 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.example.peermatch.common.ErrorCode;
 import org.example.peermatch.constant.UserConstant;
 import org.example.peermatch.exception.BusinessException;
 import org.example.peermatch.mapper.UserMapper;
 import org.example.peermatch.model.domain.User;
+import org.example.peermatch.model.vo.UserVO;
 import org.example.peermatch.service.UserService;
+import org.example.peermatch.utils.AlgorithmUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
@@ -18,10 +21,7 @@ import org.springframework.util.DigestUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -110,7 +110,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     @Override
-    public User doLogin(String userAccount, String userPassword, HttpServletRequest req) {
+    public UserVO doLogin(String userAccount, String userPassword, HttpServletRequest req) {
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -132,61 +132,63 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         QueryWrapper<User> queryWrapper = new QueryWrapper<User>();
         queryWrapper.eq("user_account", userAccount);
         queryWrapper.eq("user_password", encryptPassword);
-        User userFromDb = userMapper.selectOne(queryWrapper);
-        if (userFromDb == null) {
+        User userVOFromDb = userMapper.selectOne(queryWrapper);
+        if (userVOFromDb == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号或密码错误");
         }
         // 5. 返回用户信息(脱敏)
-        User safetydUser = getSafetyUser(userFromDb);
+        UserVO safetyUserVO = getSafetyUser(userVOFromDb);
         // 4. 保存用户登录态
         HttpSession session = req.getSession();
-        session.setAttribute(UserConstant.USER_LOGIN_STATE, safetydUser);
-        return safetydUser;
+        session.setAttribute(UserConstant.USER_LOGIN_STATE, safetyUserVO);
+        return safetyUserVO;
     }
 
     /**
      * 用户更新
      *
-     * @param user
-     * @param loginUser
+     * @param userVO
+     * @param loginUserVO
      * @return
      */
     @Override
-    public boolean updateUser(User user, User loginUser) {
-        long userId = user.getId();
+    public boolean updateUser(User userVO, UserVO loginUserVO) {
+        long userId = userVO.getId();
         if (userId <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         // todo 补充校验, 用户没有任何更新的值, 直接抛出异常
         // 管理员, 允许更新任意用户; 不是管理员，只允许更新自己信息
-        if (!isAdmin(loginUser) && userId != loginUser.getId()) {
+        if (!isAdmin(loginUserVO) && userId != loginUserVO.getId()) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
-        User oldUser = userMapper.selectById(userId);
-        if (oldUser == null) {
+        User oldUserVO = userMapper.selectById(userId);
+        if (oldUserVO == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "该用户不存在");
         }
-        return userMapper.updateById(user) > 0;
+        return userMapper.updateById(userVO) > 0;
     }
 
     /*
         用户脱敏
     */
-    public User getSafetyUser(User userFromDb) {
-        User safetydUser = new User();
-        safetydUser.setId(userFromDb.getId());
-        safetydUser.setUserName(userFromDb.getUserName());
-        safetydUser.setUserAccount(userFromDb.getUserAccount());
-        safetydUser.setAvatarUrl(userFromDb.getAvatarUrl());
-        safetydUser.setGender(userFromDb.getGender());
-        safetydUser.setEmail(userFromDb.getEmail());
-        safetydUser.setPhone(userFromDb.getPhone());
-        safetydUser.setUserRole(userFromDb.getUserRole());
-        safetydUser.setUserStatus(userFromDb.getUserStatus());
-        safetydUser.setCode(userFromDb.getCode());
-        safetydUser.setTags(userFromDb.getTags());
-        safetydUser.setCreateTime(userFromDb.getCreateTime());
-        return safetydUser;
+    public UserVO getSafetyUser(User userVOFromDb) {
+        UserVO safetyUserVO = new UserVO();
+        safetyUserVO.setId(userVOFromDb.getId());
+        safetyUserVO.setUserName(userVOFromDb.getUserName());
+        safetyUserVO.setUserAccount(userVOFromDb.getUserAccount());
+        safetyUserVO.setAvatarUrl(userVOFromDb.getAvatarUrl());
+        safetyUserVO.setGender(userVOFromDb.getGender());
+        safetyUserVO.setPhone(userVOFromDb.getPhone());
+        safetyUserVO.setEmail(userVOFromDb.getEmail());
+        safetyUserVO.setUserRole(userVOFromDb.getUserRole());
+        safetyUserVO.setUserStatus(userVOFromDb.getUserStatus());
+        safetyUserVO.setCode(userVOFromDb.getCode());
+        safetyUserVO.setProfile(userVOFromDb.getProfile());
+        safetyUserVO.setTags(userVOFromDb.getTags());
+        safetyUserVO.setCreateTime(userVOFromDb.getCreateTime());
+        safetyUserVO.setUpdateTime(userVOFromDb.getUpdateTime());
+        return safetyUserVO;
     }
 
     /**
@@ -206,14 +208,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     @Override
-    public List<User> searchUsersByTags(List<String> tagNameList) {
+    public List<UserVO> searchUsersByTags(List<String> tagNameList) {
         if (CollectionUtils.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         QueryWrapper queryWrapper = new QueryWrapper<>();
-        List<User> userListFromDb = userMapper.selectList(queryWrapper);
+        List<User> userVOListFromDb = userMapper.selectList(queryWrapper);
         Gson gson = new Gson();
-        return userListFromDb.stream().filter(user -> {
+        return userVOListFromDb.stream().filter(user -> {
             Set<String> tagNameSet = gson.fromJson(user.getTags(), new TypeToken<Set<String>>() {
             }.getType());
             tagNameSet = Optional.ofNullable(tagNameSet).orElse(new HashSet<>());
@@ -226,6 +228,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }).map(this::getSafetyUser).collect(Collectors.toList());
     }
 
+    @Override
+    public List<UserVO> matchUser(long num, UserVO loginUserVO) {
+        Gson gson = new Gson();
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id", "tags");
+        queryWrapper.isNotNull("tags");
+        List<User> userList = this.list(queryWrapper);
+        String tags = loginUserVO.getTags();
+        List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {
+        }.getType());
+        List<Pair<User, Long>> list = new ArrayList<>();
+        for (int i = 0; i < userList.size(); i++) {
+            User userVO = userList.get(i);
+            String userTags = userVO.getTags();
+            if (StringUtils.isBlank(userTags) || Objects.equals(userVO.getId(), loginUserVO.getId())) {
+                continue;
+            }
+            List<String> userTagList = gson.fromJson(userTags, new TypeToken<List<String>>() {
+            }.getType());
+            long distance = AlgorithmUtils.minDistance(tagList, userTagList);
+            list.add(new Pair<>(userVO, distance));
+        }
+        List<Pair<User, Long>> topUserList = list.stream().sorted((x, y) -> (int) (x.getValue() - y.getValue())).limit(num).collect(Collectors.toList());
+        List<Long> userIdList = topUserList.stream().map(pair -> pair.getKey().getId()).collect(Collectors.toList());
+        System.out.println(topUserList);
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.in("id", userIdList);
+        Map<Long, List<UserVO>> unOrderUserVOList = this.list(userQueryWrapper).stream().map(this::getSafetyUser).collect(Collectors.groupingBy(UserVO::getId));
+        List<UserVO> userVOVOList = userIdList.stream().map(id -> unOrderUserVOList.get(id).get(0)).collect(Collectors.toList());
+        return userVOVOList;
+    }
+
     /**
      * 根据标签搜索用户(SQL)
      *
@@ -233,7 +267,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     @Deprecated
-    private List<User> searchUsersByTagsFromSQL(List<String> tagNameList) {
+    private List<UserVO> searchUsersByTagsFromSQL(List<String> tagNameList) {
         if (CollectionUtils.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -241,8 +275,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         for (String tagName : tagNameList) {
             queryWrapper = queryWrapper.like("tags", tagName);
         }
-        List<User> userList = userMapper.selectList(queryWrapper);
-        return userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
+        List<User> userVOList = userMapper.selectList(queryWrapper);
+        return userVOList.stream().map(this::getSafetyUser).collect(Collectors.toList());
     }
 
     /**
@@ -253,13 +287,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     public boolean isAdmin(HttpServletRequest req) {
         // 用户鉴权
-        User user = (User) req.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        return user != null && user.getUserRole() == UserConstant.ADMIN_ROLE;
+        UserVO userVO = (UserVO) req.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        return userVO != null && userVO.getUserRole() == UserConstant.ADMIN_ROLE;
     }
 
-    public boolean isAdmin(User loginUser) {
+    public boolean isAdmin(UserVO loginUserVO) {
         // 用户鉴权
-        return loginUser != null && loginUser.getUserRole() == UserConstant.ADMIN_ROLE;
+        return loginUserVO != null && loginUserVO.getUserRole() == UserConstant.ADMIN_ROLE;
     }
 
     /**
@@ -268,15 +302,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @param req
      * @return
      */
-    public User getLoginUser(HttpServletRequest req) {
+    public UserVO getLoginUser(HttpServletRequest req) {
         if (req == null) {
             return null;
         }
-        User user = (User) req.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        if (user == null) {
+        UserVO userVO = (UserVO) req.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        if (userVO == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
-        return user;
+        return userVO;
     }
 
 }

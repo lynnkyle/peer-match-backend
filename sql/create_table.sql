@@ -1,5 +1,5 @@
 -- auto-generated definition
-create table user
+create table userVO
 (
     id            bigint auto_increment comment '用户id'
         primary key,

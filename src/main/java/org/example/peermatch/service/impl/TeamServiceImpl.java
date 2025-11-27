@@ -44,17 +44,17 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public long addTeam(Team team, User loginUser) {
+    public long addTeam(Team team, UserVO loginUserVO) {
         //1. 请求参数是否为空
         if (team == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //2. 是否登录，未登录不允许创建
-        if (loginUser == null) {
+        if (loginUserVO == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         //3. 校验信息
-        final long userId = loginUser.getId();
+        final long userId = loginUserVO.getId();
         //i. 队伍人数>1 且 <=20
         int maxNum = Optional.ofNullable(team.getMaxNum()).orElse(0);
         if (maxNum < 1 || maxNum > 20) {
@@ -202,7 +202,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
     }
 
     @Override
-    public boolean updateTeam(TeamUpdateRequest teamUpdateRequest, User loginUser) {
+    public boolean updateTeam(TeamUpdateRequest teamUpdateRequest, UserVO loginUserVO) {
         //1. 请求参数是否为空
         if (teamUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -226,7 +226,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         //i.查询队伍是否存在
         Team teamFromDb = this.getTeamById(teamId);
         //3. 管理员或者队伍创建者可以修改
-        if (!teamFromDb.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+        if (!teamFromDb.getUserId().equals(loginUserVO.getId()) && !userService.isAdmin(loginUserVO)) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         //TODO 4. 修改信息新旧值一致，则无需更新操作
@@ -241,13 +241,13 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
     }
 
     @Override
-    public boolean joinTeam(TeamJoinRequest teamJoinRequest, User loginUser) {
+    public boolean joinTeam(TeamJoinRequest teamJoinRequest, UserVO loginUserVO) {
         //1. 请求参数是否为空
         if (teamJoinRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //2. 校验信息
-        Long userId = loginUser.getId();
+        Long userId = loginUserVO.getId();
         //ii.只允许加入未满、未过期的队伍
         //iv. 禁止加入私有队伍
         //v. 加入私密队伍要求密码匹配
@@ -301,7 +301,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean quitTeam(TeamQuitRequest teamQuitRequest, User loginUser) {
+    public boolean quitTeam(TeamQuitRequest teamQuitRequest, UserVO loginUserVO) {
         //1. 请求参数是否为空
         if (teamQuitRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -311,7 +311,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         Long teamId = teamQuitRequest.getTeamId();
         Team teamFromDb = this.getTeamById(teamId);
         //ii.用户是否加入队伍
-        long userId = loginUser.getId();
+        long userId = loginUserVO.getId();
         UserTeam queryUserTeam = new UserTeam();
         queryUserTeam.setUserId(userId);
         queryUserTeam.setTeamId(teamId);
@@ -360,7 +360,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean deleteTeam(Long teamId, User loginUser) {
+    public boolean deleteTeam(Long teamId, UserVO loginUserVO) {
         //1. 请求参数是否为空
         if (teamId < 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -369,7 +369,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         //i.队伍是否存在
         Team teamFromDb = this.getTeamById(teamId);
         //ii.用户是否是队伍队长
-        Long userId = loginUser.getId();
+        Long userId = loginUserVO.getId();
         if (!userId.equals(teamFromDb.getUserId())) {
             throw new BusinessException(ErrorCode.FORBIDDEN, "无权限解散队伍");
         }

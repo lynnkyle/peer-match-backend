@@ -5,10 +5,8 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 通用分页请求参数
- *
  * @author LinZeyuan
- * @description
+ * @description 通用分页请求参数
  * @createDate 2025/11/13 14:53
  */
 @Data

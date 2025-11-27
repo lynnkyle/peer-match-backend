@@ -45,8 +45,6 @@ public class PreCacheJob {
         RLock lock = redissonClient.getLock(CacheConstant.recommendLock);
         try {
             if (lock.tryLock(0, -1, TimeUnit.MILLISECONDS)) {
-                Thread.sleep(300000);
-                System.out.println("getLock:" + Thread.currentThread().getId());
                 ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
                 for (Long userId : mainUserList) {
                     QueryWrapper<User> queryWrapper = new QueryWrapper<>();

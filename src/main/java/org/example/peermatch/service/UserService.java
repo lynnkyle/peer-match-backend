@@ -1,8 +1,8 @@
 package org.example.peermatch.service;
 
-import org.example.peermatch.constant.UserConstant;
 import org.example.peermatch.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.example.peermatch.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -32,24 +32,24 @@ public interface UserService extends IService<User> {
      * @param userPassword
      * @return 用户信息(脱敏)
      */
-    User doLogin(String userAccount, String userPassword, HttpServletRequest req);
+    UserVO doLogin(String userAccount, String userPassword, HttpServletRequest req);
 
     /**
      * 用户更新
      *
-     * @param user
-     * @param loginUser
+     * @param userVO
+     * @param loginUserVO
      * @return
      */
-    boolean updateUser(User user, User loginUser);
+    boolean updateUser(User userVO, UserVO loginUserVO);
 
     /**
      * 用户脱敏
      *
-     * @param userFromDb
+     * @param userVOFromDb
      * @return
      */
-    User getSafetyUser(User userFromDb);
+    UserVO getSafetyUser(User userVOFromDb);
 
     /**
      * 用户注销
@@ -65,8 +65,16 @@ public interface UserService extends IService<User> {
      * @param tagNameList
      * @return
      */
-    List<User> searchUsersByTags(List<String> tagNameList);
+    List<UserVO> searchUsersByTags(List<String> tagNameList);
 
+    /**
+     * 匹配用户
+     *
+     * @param num
+     * @param loginUserVO
+     * @return
+     */
+    List<UserVO> matchUser(long num, UserVO loginUserVO);
 
     /**
      * 判断用户是否为管理员
@@ -79,10 +87,10 @@ public interface UserService extends IService<User> {
     /**
      * 判断用户是否为管理员
      *
-     * @param loginUser
+     * @param loginUserVO
      * @return
      */
-    boolean isAdmin(User loginUser);
+    boolean isAdmin(UserVO loginUserVO);
 
     /**
      * 获取当前用户登录信息
@@ -90,5 +98,5 @@ public interface UserService extends IService<User> {
      * @param req
      * @return
      */
-    User getLoginUser(HttpServletRequest req);
+    UserVO getLoginUser(HttpServletRequest req);
 }

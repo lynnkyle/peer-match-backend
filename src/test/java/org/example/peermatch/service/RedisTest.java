@@ -4,7 +4,6 @@ import org.example.peermatch.model.domain.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
 import javax.annotation.Resource;
@@ -25,9 +24,9 @@ public class RedisTest {
         valueOperations.set("lzyString", "fpga");
         valueOperations.set("lzyInt", 1);
         valueOperations.set("lzyDouble", 1.0);
-        User user = new User();
-        user.setUserName("lzy");
-        valueOperations.set("lzyUser", user);
+        User userVO = new User();
+        userVO.setUserName("lzy");
+        valueOperations.set("lzyUser", userVO);
         System.out.println(valueOperations.get("lzyString"));
         System.out.println(valueOperations.get("lzyInt"));
         System.out.println(valueOperations.get("lzyDouble"));

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.example.peermatch.common.BaseResponse;
+import org.example.peermatch.common.DeleteRequest;
 import org.example.peermatch.common.ErrorCode;
 import org.example.peermatch.common.ResultUtils;
 import org.example.peermatch.exception.BusinessException;
@@ -17,6 +18,7 @@ import org.example.peermatch.model.request.TeamJoinRequest;
 import org.example.peermatch.model.request.TeamQuitRequest;
 import org.example.peermatch.model.request.TeamUpdateRequest;
 import org.example.peermatch.model.vo.TeamUserVO;
+import org.example.peermatch.model.vo.UserVO;
 import org.example.peermatch.service.TeamService;
 import org.example.peermatch.service.UserService;
 import org.example.peermatch.service.UserTeamService;
@@ -53,10 +55,10 @@ public class TeamController {
         if (teamAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(req);
+        UserVO loginUserVO = userService.getLoginUser(req);
         Team team = new Team();
         BeanUtils.copyProperties(teamAddRequest, team);
-        long teamId = teamService.addTeam(team, loginUser);
+        long teamId = teamService.addTeam(team, loginUserVO);
         return ResultUtils.success(teamId, "成功创建队伍");
     }
 
@@ -65,8 +67,8 @@ public class TeamController {
         if (teamUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(req);
-        boolean res = teamService.updateTeam(teamUpdateRequest, loginUser);
+        UserVO loginUserVO = userService.getLoginUser(req);
+        boolean res = teamService.updateTeam(teamUpdateRequest, loginUserVO);
         return ResultUtils.success(res, "成功更新队伍");
     }
 
@@ -75,8 +77,8 @@ public class TeamController {
         if (teamJoinRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(req);
-        boolean res = teamService.joinTeam(teamJoinRequest, loginUser);
+        UserVO loginUserVO = userService.getLoginUser(req);
+        boolean res = teamService.joinTeam(teamJoinRequest, loginUserVO);
         return ResultUtils.success(res, "成功加入队伍");
     }
 
@@ -85,18 +87,19 @@ public class TeamController {
         if (teamQuitRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(req);
-        boolean res = teamService.quitTeam(teamQuitRequest, loginUser);
+        UserVO loginUserVO = userService.getLoginUser(req);
+        boolean res = teamService.quitTeam(teamQuitRequest, loginUserVO);
         return ResultUtils.success(res, "成功退出队伍");
     }
 
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteTeam(@RequestParam("teamId") long teamId, HttpServletRequest req) {
-        if (teamId <= 0) {
+    public BaseResponse<Boolean> deleteTeam(@RequestBody DeleteRequest deleteRequest, HttpServletRequest req) {
+        if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(req);
-        boolean res = teamService.deleteTeam(teamId, loginUser);
+        long teamId = deleteRequest.getId();
+        UserVO loginUserVO = userService.getLoginUser(req);
+        boolean res = teamService.deleteTeam(teamId, loginUserVO);
         return ResultUtils.success(res, "成功删除队伍");
     }
 
@@ -147,8 +150,8 @@ public class TeamController {
         if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(req);
-        teamQuery.setUserId(loginUser.getId());
+        UserVO loginUserVO = userService.getLoginUser(req);
+        teamQuery.setUserId(loginUserVO.getId());
         List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true);
         return ResultUtils.success(teamList, "成功查询队伍列表");
     }
@@ -165,9 +168,9 @@ public class TeamController {
         if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(req);
+        UserVO loginUserVO = userService.getLoginUser(req);
         QueryWrapper<UserTeam> queryWrapper = new QueryWrapper();
-        queryWrapper.eq("user_id", loginUser.getId());
+        queryWrapper.eq("user_id", loginUserVO.getId());
         List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
         Map<Long, List<UserTeam>> listMap = userTeamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
         List<Long> idList = new ArrayList<>(listMap.keySet());

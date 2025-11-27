@@ -30,22 +30,22 @@ public class UserInsert {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         final int INSERT_NUM = 100000;
-        List<User> userList = new ArrayList<>();
+        List<User> userVOList = new ArrayList<>();
         for (int i = 0; i < INSERT_NUM; i++) {
-            User user = new User();
-            user.setUserName("假用户");
-            user.setUserAccount("fakeuser");
-            user.setUserPassword("123456789");
-            user.setAvatarUrl("https://www.codefather.cn/_next/image?url=%2Fimages%2Flogo.png&w=128&q=75");
-            user.setGender(0);
-            user.setPhone("12345678901");
-            user.setEmail("123@qq.com");
-            user.setUserRole(0);
-            user.setUserStatus(0);
-            user.setCode("11111111");
-            userList.add(user);
+            User userVO = new User();
+            userVO.setUserName("假用户");
+            userVO.setUserAccount("fakeuser");
+            userVO.setUserPassword("123456789");
+            userVO.setAvatarUrl("https://www.codefather.cn/_next/image?url=%2Fimages%2Flogo.png&w=128&q=75");
+            userVO.setGender(0);
+            userVO.setPhone("12345678901");
+            userVO.setEmail("123@qq.com");
+            userVO.setUserRole(0);
+            userVO.setUserStatus(0);
+            userVO.setCode("11111111");
+            userVOList.add(userVO);
         }
-        userService.saveBatch(userList, 10000);
+        userService.saveBatch(userVOList, 10000);
         stopWatch.stop();
         System.out.println(stopWatch.getTotalTimeMillis());
     }
@@ -56,31 +56,31 @@ public class UserInsert {
         stopWatch.start();
         final int INSERT_NUM = 100000;
         int batchSize = 2500;
-        List<User> userList = new ArrayList<>();
+        List<User> userVOList = new ArrayList<>();
         List<CompletableFuture<Void>> futureList = new ArrayList<>();
         int j = 0;
         for (int i = 0; i < 40; i++) {
             while (true) {
                 j++;
-                User user = new User();
-                user.setUserName("假用户");
-                user.setUserAccount("fakeuser");
-                user.setUserPassword("123456789");
-                user.setAvatarUrl("https://www.codefather.cn/_next/image?url=%2Fimages%2Flogo.png&w=128&q=75");
-                user.setGender(0);
-                user.setPhone("12345678901");
-                user.setEmail("123@qq.com");
-                user.setUserRole(0);
-                user.setUserStatus(0);
-                user.setCode("11111111");
-                userList.add(user);
+                User userVO = new User();
+                userVO.setUserName("假用户");
+                userVO.setUserAccount("fakeuser");
+                userVO.setUserPassword("123456789");
+                userVO.setAvatarUrl("https://www.codefather.cn/_next/image?url=%2Fimages%2Flogo.png&w=128&q=75");
+                userVO.setGender(0);
+                userVO.setPhone("12345678901");
+                userVO.setEmail("123@qq.com");
+                userVO.setUserRole(0);
+                userVO.setUserStatus(0);
+                userVO.setCode("11111111");
+                userVOList.add(userVO);
                 if (j % batchSize == 0) {
                     break;
                 }
             }
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 System.out.println(Thread.currentThread().getName());
-                userService.saveBatch(userList, batchSize);
+                userService.saveBatch(userVOList, batchSize);
             }, executorService);
             futureList.add(future);
         }

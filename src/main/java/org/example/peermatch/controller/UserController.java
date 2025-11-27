@@ -3,7 +3,6 @@ package org.example.peermatch.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.example.peermatch.common.BaseResponse;
@@ -15,6 +14,7 @@ import org.example.peermatch.exception.BusinessException;
 import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.request.UserLoginRequest;
 import org.example.peermatch.model.request.UserRegisterRequest;
+import org.example.peermatch.model.vo.UserVO;
 import org.example.peermatch.service.UserService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -63,14 +63,14 @@ public class UserController {
         用户登录
      */
     @PostMapping("/login")
-    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest req) {
+    public BaseResponse<UserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest req) {
         if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
-        User user = userService.doLogin(userAccount, userPassword, req);
-        return ResultUtils.success(user, "用户登录成功, 并返回用户信息");
+        UserVO userVO = userService.doLogin(userAccount, userPassword, req);
+        return ResultUtils.success(userVO, "用户登录成功, 并返回用户信息");
     }
 
     @PostMapping("/logout")
@@ -80,20 +80,20 @@ public class UserController {
     }
 
     @GetMapping("/current")
-    public BaseResponse<User> getCurrentUser(HttpServletRequest req) {
-        User currentUser = (User) req.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        if (currentUser == null) {
+    public BaseResponse<UserVO> getCurrentUser(HttpServletRequest req) {
+        UserVO currentUserVO = (UserVO) req.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        if (currentUserVO == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
-        long id = currentUser.getId();
+        long id = currentUserVO.getId();
         // todo 校验用户是否合法
         User user = userService.getById(id);
-        user = userService.getSafetyUser(user);
-        return ResultUtils.success(user, "当前用户信息获取成功,并返回当前用户信息");
+        UserVO userVO = userService.getSafetyUser(user);
+        return ResultUtils.success(userVO, "当前用户信息获取成功,并返回当前用户信息");
     }
 
     @GetMapping("/search")
-    public BaseResponse<List<User>> searchUsers(@RequestParam(value = "name", required = false) String userName, HttpServletRequest req) {
+    public BaseResponse<List<UserVO>> searchUsers(@RequestParam(value = "name", required = false) String userName, HttpServletRequest req) {
         // 用户鉴权
         if (!userService.isAdmin(req)) {
             throw new BusinessException(ErrorCode.NO_AUTH);
@@ -103,34 +103,34 @@ public class UserController {
             queryWrapper.like("user_name", userName);
         }
         List<User> userList = userService.list(queryWrapper);
-        userList = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
-        return ResultUtils.success(userList, "用户列表获取成功, 并返回用户列表");
+        List<UserVO> userVOVOList = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(userVOVOList, "用户列表获取成功, 并返回用户列表");
     }
 
     @GetMapping("/search/tags")
-    public BaseResponse<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList) {
+    public BaseResponse<List<UserVO>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList) {
         if (CollectionUtils.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        List<User> userList = userService.searchUsersByTags(tagNameList);
-        return ResultUtils.success(userList, "成功根据标签返回用户列表");
+        List<UserVO> userVOList = userService.searchUsersByTags(tagNameList);
+        return ResultUtils.success(userVOList, "成功根据标签返回用户列表");
     }
 
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateUser(@RequestBody User user, HttpServletRequest req) {
-        if (user == null) {
+    public BaseResponse<Boolean> updateUser(@RequestBody User userVO, HttpServletRequest req) {
+        if (userVO == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(req);
-        boolean res = userService.updateUser(user, loginUser);
+        UserVO loginUserVO = userService.getLoginUser(req);
+        boolean res = userService.updateUser(userVO, loginUserVO);
         return ResultUtils.success(res, "用户信息更新成功");
     }
 
     @GetMapping("/recommend")
     public BaseResponse<IPage<User>> recommendUsers(int pageNum, int pageSize, HttpServletRequest req) {
         // 缓存存在, 直接读缓存
-        User loginUser = userService.getLoginUser(req);
-        String redisKey = String.format(CacheConstant.recommendCache + "%s", loginUser.getId());
+        UserVO loginUserVO = userService.getLoginUser(req);
+        String redisKey = String.format(CacheConstant.recommendCache + "%s", loginUserVO.getId());
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         IPage<User> userPage = (Page<User>) valueOperations.get(redisKey);
         if (userPage != null) {
@@ -147,6 +147,16 @@ public class UserController {
         return ResultUtils.success(userPage, "用户列表获取成功, 并返回用户列表");
     }
 
+    @GetMapping("/match")
+    public BaseResponse<List<UserVO>> matchUsers(long num, HttpServletRequest req) {
+        if (num <= 0 || num > 20) {
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
+        }
+        UserVO loginUserVO = userService.getLoginUser(req);
+        List<UserVO> userVOVOList = userService.matchUser(num, loginUserVO);
+        return ResultUtils.success(userVOVOList, "成功获取匹配用户");
+    }
+
     @DeleteMapping("/delete")
     public BaseResponse<Boolean> deleteUsers(@RequestParam("id") long id, HttpServletRequest req) {
         if (!userService.isAdmin(req)) throw new BusinessException(ErrorCode.NO_AUTH);
@@ -157,5 +167,4 @@ public class UserController {
         }
         return ResultUtils.success(res, "用户删除成功");
     }
-
 }

@@ -2,6 +2,7 @@ package org.example.peermatch;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.peermatch.model.domain.User;
+import org.example.peermatch.model.vo.UserVO;
 import org.example.peermatch.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -60,7 +61,7 @@ class PeerMatchBackendApplicationTests {
     @Test
     public void searchUsersByTags() {
         List<String> tagNameList = Arrays.asList("java", "python");
-        List<User> res = userService.searchUsersByTags(tagNameList);
+        List<UserVO> res = userService.searchUsersByTags(tagNameList);
         Assertions.assertNotNull(res);
         log.info("res = {}", res);
     }
