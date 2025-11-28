@@ -16,7 +16,7 @@ import java.util.concurrent.*;
  * @createDate 2025/11/7 14:33
  */
 @SpringBootTest
-public class UserInsert {
+public class UserInsertTest {
     @Resource
     private UserService userService;
 
