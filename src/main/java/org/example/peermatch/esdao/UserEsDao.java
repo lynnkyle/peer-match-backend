@@ -9,5 +9,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
  * @createDate 2025/11/28 17:16
  */
 public interface UserEsDao extends ElasticsearchRepository<UserEsDTO, String> {
-    UserEsDao findByUserName(String userName);
+    UserEsDTO findByUserName(String userName);
+
+    UserEsDTO findByProfile(String profile);
 }

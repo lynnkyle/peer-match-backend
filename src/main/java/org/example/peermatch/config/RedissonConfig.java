@@ -30,7 +30,6 @@ public class RedissonConfig {
         //config.useClusterServers().addNodeAddress("redis://127.0.0.1:7181");
         //设置单例的方式
         String redisAddress = String.format("redis://%s:%d", host, port);
-        System.out.println(redisAddress);
         config.useSingleServer().setAddress(redisAddress).setDatabase(redissonDatabase);
         // 2. 创建实例
         return Redisson.create(config);
