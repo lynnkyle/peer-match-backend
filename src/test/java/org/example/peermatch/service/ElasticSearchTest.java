@@ -81,7 +81,7 @@ public class ElasticSearchTest {
         boolQueryBuilder.should(QueryBuilders.termQuery("tags", "python"));
         boolQueryBuilder.minimumShouldMatch(1);
         FieldSortBuilder fieldSortBuilder = SortBuilders.fieldSort("createTime");
-        PageRequest pageRequest = PageRequest.of(0, 1);
+        PageRequest pageRequest = PageRequest.of(0, 2);
         NativeSearchQuery query = new NativeSearchQueryBuilder()
                 .withQuery(boolQueryBuilder).withSorts(fieldSortBuilder).withPageable(pageRequest).build();
         SearchHits<UserEsDTO> search = template.search(query, UserEsDTO.class);
