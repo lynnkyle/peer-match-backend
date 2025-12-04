@@ -1,10 +1,9 @@
 package org.example.peermatch.service.impl;
-
+import cn.hutool.core.lang.Pair;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.example.peermatch.common.ErrorCode;
 import org.example.peermatch.constant.UserConstant;

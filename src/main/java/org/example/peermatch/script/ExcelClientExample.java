@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * @description 导入Excel
  * @createDate 2025/10/30 11:09
  */
-public class UserImport {
+public class ExcelClientExample {
     public static void main(String[] args) {
         String fileName = "C:\\Users\\LinZeyuan\\Desktop\\peer-match\\peer-match-backend\\src\\main\\resources\\prodExcel.xlsx";
         List<ExcelUserInfo> userInfoList = EasyExcel.read(fileName).head(ExcelUserInfo.class).sheet().doReadSync();
