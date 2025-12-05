@@ -38,3 +38,13 @@ mybatis-plus:
       logic-delete-field: is_delete
       logic-delete-value: 1
       logic-not-delete-value: 0
+#executor:
+#  core-pool-size:
+
+canal:
+  host: localhost
+  port: 11111
+  destination: example1
+  user: canal
+  password: canal
+

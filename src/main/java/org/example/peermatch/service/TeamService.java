@@ -2,7 +2,7 @@ package org.example.peermatch.service;
 
 import org.example.peermatch.model.domain.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.example.peermatch.model.dto.TeamQuery;
+import org.example.peermatch.model.dto.team.TeamQuery;
 import org.example.peermatch.model.request.TeamJoinRequest;
 import org.example.peermatch.model.request.TeamQuitRequest;
 import org.example.peermatch.model.request.TeamUpdateRequest;

@@ -127,7 +127,7 @@ public class UserController {
     }
 
     @GetMapping("/recommend")
-    public BaseResponse<IPage<User>> recommendUsers(int pageNum, int pageSize, HttpServletRequest req) {
+    public BaseResponse<IPage<User>> recommendUsers(int pageNum, int pageSize, HttpServletRequest req) throws InterruptedException {
         // 缓存存在, 直接读缓存
         UserVO loginUserVO = userService.getLoginUser(req);
         String redisKey = String.format(CacheConstant.recommendCache + "%s", loginUserVO.getId());
@@ -153,8 +153,8 @@ public class UserController {
             return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
         UserVO loginUserVO = userService.getLoginUser(req);
-        List<UserVO> userVOVOList = userService.matchUser(num, loginUserVO);
-        return ResultUtils.success(userVOVOList, "成功获取匹配用户");
+        List<UserVO> userVOList = userService.matchUser(num, loginUserVO);
+        return ResultUtils.success(userVOList, "成功获取匹配用户");
     }
 
     @DeleteMapping("/delete")

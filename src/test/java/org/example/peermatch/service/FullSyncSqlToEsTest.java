@@ -1,7 +1,9 @@
 package org.example.peermatch.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+@Slf4j
 @SpringBootTest
 public class FullSyncSqlToEsTest {
     @Autowired
@@ -39,9 +41,18 @@ public class FullSyncSqlToEsTest {
 
     @Test
     public void testEsClient() throws IOException {
-        GetIndexRequest request = new GetIndexRequest("user");
+        GetIndexRequest request = new GetIndexRequest("post");
         boolean exists = esClient.indices().exists(request, RequestOptions.DEFAULT);
-        System.out.println(request);
-        System.out.println(exists);
+        if (!exists) {
+            CreateIndexRequest createIndexRequest = new CreateIndexRequest("post");
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("id", Collections.singletonMap("type", "keyword"));
+            properties.put("name", Collections.singletonMap("type", "text"));
+            properties.put("create_time", Collections.singletonMap("type", "date"));
+            Map<String, Map<String, Object>> mapping = Collections.singletonMap("properties", properties);
+            createIndexRequest.mapping(mapping);
+            esClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+            log.info("创建ES索引: {}", "post");
+        }
     }
 }

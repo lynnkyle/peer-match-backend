@@ -27,4 +27,11 @@
         phone,email,user_role,user_status,code,
         tags,is_delete,create_time,update_time
     </sql>
+    <select id="listUserWithDelete" resultType="org.example.peermatch.model.domain.User">
+        select *
+        from user
+        where update_time >= #{minUpdateTime}
+    </select>
+
+
 </mapper>

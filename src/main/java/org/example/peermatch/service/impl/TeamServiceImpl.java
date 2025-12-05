@@ -13,7 +13,7 @@ import org.example.peermatch.mapper.TeamMapper;
 import org.example.peermatch.model.domain.Team;
 import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.domain.UserTeam;
-import org.example.peermatch.model.dto.TeamQuery;
+import org.example.peermatch.model.dto.team.TeamQuery;
 import org.example.peermatch.model.request.TeamJoinRequest;
 import org.example.peermatch.model.request.TeamQuitRequest;
 import org.example.peermatch.model.request.TeamUpdateRequest;
