@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.alibaba.otter.canal.client.CanalConnector;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -64,16 +65,6 @@ public class ElasticSearchTest {
     }
 
     @Test
-    void testFindByProfile() {
-        UserEsDTO dto = userEsDao.findByProfile("大厂高级Java工程师");
-        System.out.println(dto);
-        dto = userEsDao.findByProfile("大厂");
-        System.out.println(dto);
-        dto = userEsDao.findByProfile("高级Java工程师");
-        System.out.println(dto);
-    }
-
-    @Test
     void testElasticSearchTemplate() {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.must(QueryBuilders.matchQuery("userName", "泽源"));
@@ -87,5 +78,14 @@ public class ElasticSearchTest {
         SearchHits<UserEsDTO> search = template.search(query, UserEsDTO.class);
         List<SearchHit<UserEsDTO>> searchHits = search.getSearchHits();
         System.out.println(searchHits);
+    }
+
+
+    @Resource
+    private CanalConnector canalConnector;
+
+    @Test
+    void testCanal() {
+        System.out.println(canalConnector);
     }
 }
