@@ -56,6 +56,21 @@ public class TeamUserVO implements Serializable {
     private Integer teamStatus;
 
     /**
+     * 用户列表
+     */
+    private UserVO createUser;
+
+    /**
+     * 加入用户信息
+     */
+    private List<UserVO> members;
+
+    /**
+     * 是否已加入队伍
+     */
+    private Boolean hasJoin;
+
+    /**
      * 创建时间
      */
     private Date createTime;
@@ -64,9 +79,4 @@ public class TeamUserVO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
-
-    /**
-     * 用户列表
-     */
-    private UserVO createUser;
 }

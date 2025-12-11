@@ -9,7 +9,9 @@ import org.example.peermatch.common.DeleteRequest;
 import org.example.peermatch.common.ErrorCode;
 import org.example.peermatch.common.ResultUtils;
 import org.example.peermatch.exception.BusinessException;
+import org.example.peermatch.mapper.UserMapper;
 import org.example.peermatch.model.domain.Team;
+import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.domain.UserTeam;
 import org.example.peermatch.model.dto.team.TeamQuery;
 import org.example.peermatch.model.request.TeamAddRequest;
@@ -22,6 +24,7 @@ import org.example.peermatch.service.TeamService;
 import org.example.peermatch.service.UserService;
 import org.example.peermatch.service.UserTeamService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -29,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -48,6 +52,7 @@ public class TeamController {
     private TeamService teamService;
     @Resource
     private UserTeamService userTeamService;
+
 
     @PostMapping("/add")
     public BaseResponse<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest, HttpServletRequest req) {
@@ -121,6 +126,39 @@ public class TeamController {
         }
         boolean isAdmin = userService.isAdmin(req);
         List<TeamUserVO> teamList = teamService.listTeams(teamQuery, isAdmin);
+        List<Long> teamIdList = teamList.stream().map(TeamUserVO::getId).collect(Collectors.toList());
+        // 判断当前用户是否已经加入队伍
+        try {
+            UserVO loginUser = userService.getLoginUser(req);
+            QueryWrapper<UserTeam> queryWrapper = new QueryWrapper();
+            queryWrapper.eq("user_id", loginUser.getId());
+            queryWrapper.in("team_id", teamIdList);
+            List<UserTeam> userTeamByDbList = userTeamService.list(queryWrapper);
+            Set<Long> hasJoinTeamIdSet = userTeamByDbList.stream().map(UserTeam::getTeamId).collect(Collectors.toSet());
+            teamList.forEach(teamUserVO -> {
+                boolean hasJoin = hasJoinTeamIdSet.contains(teamUserVO.getId());
+                teamUserVO.setHasJoin(hasJoin);
+            });
+        } catch (Exception e) {
+
+        }
+        // 查询已加入队伍的用户信息
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper();
+        queryWrapper.in("team_id", teamIdList);
+        List<UserTeam> userTeamListFromIdByDb = userTeamService.list(queryWrapper);
+        Map<Long, List<UserTeam>> userTeamListGroupById = userTeamListFromIdByDb.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
+        teamList.forEach(teamUserVO -> {
+            List<UserTeam> userTeamList = userTeamListGroupById.getOrDefault(teamUserVO.getId(), new ArrayList<>());
+            List<Long> userIdList = userTeamList.stream().map(UserTeam::getUserId).collect(Collectors.toList());
+            QueryWrapper<User> userQueryWrapper = new QueryWrapper();
+            userQueryWrapper.in("id", userIdList);
+            List<UserVO> userList = userService.list(userQueryWrapper).stream().map(user -> {
+                UserVO userVO = new UserVO();
+                BeanUtils.copyProperties(user, userVO);
+                return userVO;
+            }).collect(Collectors.toList());
+            teamUserVO.setMembers(userList);
+        });
         return ResultUtils.success(teamList, "成功查询队伍列表");
     }
 
