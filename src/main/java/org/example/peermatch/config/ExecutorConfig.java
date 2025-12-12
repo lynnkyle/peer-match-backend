@@ -1,5 +1,6 @@
 package org.example.peermatch.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,8 +12,9 @@ import java.util.concurrent.*;
  * @description
  * @createDate 2025/12/5 17:09
  */
-//@Configuration
-//@ConfigurationProperties(prefix = "executor")
+@Data
+@Configuration
+@ConfigurationProperties(prefix = "executor")
 public class ExecutorConfig {
     private int corePoolSize;
     private int maxPoolSize;

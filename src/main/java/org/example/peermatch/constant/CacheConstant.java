@@ -8,6 +8,10 @@ package org.example.peermatch.constant;
 
 
 public interface CacheConstant {
+    //  分布式锁
     String recommendLock = "peer-match:user-job:recommend:lock";
     String recommendCache = "peer-match:user:recommend:";
+    //  分布式锁
+    String joinTeamLock = "peer-match:team:join:lock";
+    String joinTeamCache = "peer-match:team:join:";
 }

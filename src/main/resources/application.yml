@@ -38,8 +38,11 @@ mybatis-plus:
       logic-delete-field: is_delete
       logic-delete-value: 1
       logic-not-delete-value: 0
-#executor:
-#  core-pool-size:
+executor:
+  core-pool-size: 16
+  max-pool-size: 32
+  keep-alive-time: 5
+  queue-capacity: 1000
 
 canal:
   host: localhost
