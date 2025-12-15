@@ -16,14 +16,26 @@ import java.util.concurrent.*;
 @Configuration
 @ConfigurationProperties(prefix = "executor")
 public class ExecutorConfig {
+    /*
+        线程池核心线程数
+     */
     private int corePoolSize;
+    /*
+        线程池最大线程数
+     */
     private int maxPoolSize;
+    /*
+        线程池线程空闲时间
+     */
     private int keepAliveTime;
+    /*
+        线程池队列容量
+     */
     private int queueCapacity;
 
     @Bean
     public Executor asyncServiceExecutor() {
-        ExecutorService executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.MINUTES, new ArrayBlockingQueue<>(queueCapacity));
+        ExecutorService executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.SECONDS, new ArrayBlockingQueue<>(queueCapacity));
         return executor;
     }
 }

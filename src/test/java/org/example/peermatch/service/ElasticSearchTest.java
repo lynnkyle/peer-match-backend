@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import com.alibaba.otter.canal.client.CanalConnector;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -87,5 +89,12 @@ public class ElasticSearchTest {
     @Test
     void testCanal() {
         System.out.println(canalConnector);
+    }
+
+    @Resource
+    private ExecutorService executor;
+    @Test
+    void testExecutor() {
+        System.out.println(executor);
     }
 }

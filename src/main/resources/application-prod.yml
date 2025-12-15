@@ -1,8 +1,41 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
 spring:
+  application:
+    name: user-center
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://118.25.157.191:3306/peer-match
+    url: jdbc:mysql://peer-match-mysql:3306/peer-match
     username: root
     password: 123456
   session:
     timeout: 86400
+  redis:
+    host: peer-match-redis
+    port: 6379
+    database: 1
+    redisson-database: 2
+    session:
+      timeout: 86400
+      store-type: redis
+  elasticsearch:
+    uris: http://peer-match-elasticsearch:9200
+  #    username: root
+  #    password: 123456
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 数据库逻辑删除字段
+      logic-delete-field: is_delete
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+executor:
+  core-pool-size: 16
+  max-pool-size: 32
+  keep-alive-time: 5
+  queue-capacity: 1000

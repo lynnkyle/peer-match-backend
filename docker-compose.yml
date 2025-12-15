@@ -2,21 +2,49 @@ version: '3.8'
 services:
   mysql:
     image: mysql:8.0
-    container_name: user-center-database
+    container_name: peer-match-mysql
     environment:
       MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: user-center
+      MYSQL_DATABASE: peer-match
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - ./sql:/docker-entrypoint-initdb.d
       - ./mysql:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: peer-match-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  elasticsearch:
+    container_name: peer-match-elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.29
+    environment:
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - "TZ=Asia/Shanghai"
+      - "discovery.type=single-node"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - ./data:/usr/share/elasticsearch/data
+      - ./plugins:/usr/share/elasticsearch/plugins
+    command: >
+      bash -c "chown -R 1000:1000 /usr/share/elasticsearch/data && chmod -R 775 /usr/share/elasticsearch/data && /usr/local/bin/docker-entrypoint.sh eswrapper"
 
   backend:
     build: .
     image: peer-match-backend:v0.0.1
     container_name: peer-match-backend
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       - mysql
+      - redis
+      - elasticsearch

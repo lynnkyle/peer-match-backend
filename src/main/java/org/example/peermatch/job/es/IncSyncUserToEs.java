@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * @createDate 2025/12/5 14:26
  */
 @Slf4j
-//@Component
+@Component
 public class IncSyncUserToEs {
     @Resource
     private UserMapper userMapper;

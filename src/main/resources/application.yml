@@ -8,7 +8,7 @@ server:
 #      timeout: 1d
 spring:
   profiles:
-    active: dev
+    active: prod
   application:
     name: user-center
   datasource:
@@ -26,8 +26,8 @@ spring:
     store-type: redis
   elasticsearch:
     uris: http://localhost:9200
-    username: root
-    password: 123456
+#    username: root
+#    password: 123456
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
@@ -43,7 +43,6 @@ executor:
   max-pool-size: 32
   keep-alive-time: 5
   queue-capacity: 1000
-
 canal:
   host: localhost
   port: 11111
