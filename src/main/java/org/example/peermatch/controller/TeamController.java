@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/team")
-@CrossOrigin(origins = {"http://peer-match-front.linzeyuan.site", "http://localhost:5173"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://peer-match-front.linzeyuan.site", "http://118.25.157.191", "http://localhost:5173"}, allowCredentials = "true")
 public class TeamController {
 
     @Resource
