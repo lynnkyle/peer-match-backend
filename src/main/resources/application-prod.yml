@@ -1,19 +1,19 @@
 server:
   port: 8080
   servlet:
-    context-path: /peer-match/api
+    context-path: /peer-match-backend/api
 spring:
   application:
     name: peer-match
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://peer-match-mysql:3306/peer-match
+    url: jdbc:mysql://mysql:3306/peer-match
     username: root
     password: 123456
   session:
     timeout: 86400
   redis:
-    host: peer-match-redis
+    host: redis
     port: 6379
     database: 1
     redisson-database: 2
@@ -21,7 +21,7 @@ spring:
       timeout: 86400
       store-type: redis
   elasticsearch:
-    uris: http://peer-match-elasticsearch:9200
+    uris: http://elasticsearch:9200
   #    username: root
   #    password: 123456
 mybatis-plus:
