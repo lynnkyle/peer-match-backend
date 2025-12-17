@@ -1,13 +1,10 @@
 server:
   port: 8080
   servlet:
-    context-path: /api
-    session:
-      cookie:
-        domain: localhost
+    context-path: /peer-match/api
 spring:
   application:
-    name: user-center
+    name: peer-match
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://peer-match-mysql:3306/peer-match
@@ -37,23 +34,3 @@ mybatis-plus:
       logic-delete-field: is_delete
       logic-delete-value: 1
       logic-not-delete-value: 0
-executor:
-  core-pool-size: 16
-  max-pool-size: 32
-  keep-alive-time: 5
-  queue-capacity: 1000
-knife4j:
-  enable: true
-  openapi:
-    title: 用户中心
-    description: 用户中心接口文档
-    email: 903586678@qq.com
-    concat: 林泽源
-    url: https://docs.xiaominfo.com
-    version: v0.0.1
-    group:
-      user-controller:
-        group-name: 用户模块
-        api-rule: package
-        api-rule-resources:
-          - org.example.peermatch.controller

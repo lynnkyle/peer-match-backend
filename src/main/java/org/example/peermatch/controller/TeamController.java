@@ -4,12 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.example.peermatch.common.BaseResponse;
 import org.example.peermatch.common.DeleteRequest;
 import org.example.peermatch.common.ErrorCode;
 import org.example.peermatch.common.ResultUtils;
 import org.example.peermatch.exception.BusinessException;
-import org.example.peermatch.mapper.UserMapper;
 import org.example.peermatch.model.domain.Team;
 import org.example.peermatch.model.domain.User;
 import org.example.peermatch.model.domain.UserTeam;
@@ -24,7 +24,6 @@ import org.example.peermatch.service.TeamService;
 import org.example.peermatch.service.UserService;
 import org.example.peermatch.service.UserTeamService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -43,7 +42,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/team")
-@CrossOrigin(origins = {"http://peer-match-front.linzeyuan.site", "http://118.25.157.191", "http://localhost:5173"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173"}, allowCredentials = "true")
 public class TeamController {
 
     @Resource
@@ -127,6 +126,9 @@ public class TeamController {
         boolean isAdmin = userService.isAdmin(req);
         List<TeamUserVO> teamList = teamService.listTeams(teamQuery, isAdmin);
         List<Long> teamIdList = teamList.stream().map(TeamUserVO::getId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(teamList)) {
+            return ResultUtils.success(teamList, "成功查询队伍列表");
+        }
         // 判断当前用户是否已经加入队伍
         try {
             UserVO loginUser = userService.getLoginUser(req);

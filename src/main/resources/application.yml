@@ -2,15 +2,15 @@ server:
   port: 8080
   servlet:
     context-path: /api
-    session:
-      cookie:
-        domain: localhost
+#    session:
+#      cookie:
+#        domain: localhost
 #      timeout: 1d
 spring:
   profiles:
-    active: prod
+    active: dev
   application:
-    name: user-center
+    name: peer-match
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/peer-match?serverTimezone=Asia/Shanghai
